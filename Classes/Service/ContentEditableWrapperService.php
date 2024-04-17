@@ -16,7 +16,7 @@ namespace TYPO3\CMS\FrontendEditing\Service;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use TYPO3\CMS\Core\Context\Context;
 use InvalidArgumentException;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\Router;
@@ -457,7 +457,7 @@ class ContentEditableWrapperService
             'record_edit',
             [
                 'edit[' . $table . '][' . $uid . ']' => 'edit',
-                'noView' => (GeneralUtility::_GP('ADMCMD_view') ? 1 : 0),
+                'noView' => ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['ADMCMD_view'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['ADMCMD_view'] ?? null ? 1 : 0),
                 'feEdit' => 1
             ]
         );
@@ -494,7 +494,7 @@ class ContentEditableWrapperService
 
         $urlParameters = [
             'edit[' . $table . '][' . $newId . ']' => 'new',
-            'noView' => (GeneralUtility::_GP('ADMCMD_view') ? 1 : 0),
+            'noView' => ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['ADMCMD_view'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['ADMCMD_view'] ?? null ? 1 : 0),
             'feEdit' => 1
         ];
 
@@ -568,7 +568,7 @@ class ContentEditableWrapperService
             if (
                 ($enablecolumns['starttime'] ?? false)
                 && $row[$enablecolumns['starttime']]
-                && $row[$enablecolumns['starttime']] > $GLOBALS['EXEC_TIME']
+                && $row[$enablecolumns['starttime']] > GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')
             ) {
                 $isDisabled = true;
             }
@@ -576,7 +576,7 @@ class ContentEditableWrapperService
             if (
                 ($enablecolumns['endtime'] ?? false)
                 && $row[$enablecolumns['endtime']]
-                && $row[$enablecolumns['endtime']] < $GLOBALS['EXEC_TIME']
+                && $row[$enablecolumns['endtime']] < GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')
             ) {
                 $isDisabled = true;
             }

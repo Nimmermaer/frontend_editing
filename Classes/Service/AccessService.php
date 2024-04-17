@@ -41,7 +41,7 @@ class AccessService
         if (
             isset($GLOBALS['BE_USER'])
             && $GLOBALS['BE_USER'] instanceof FrontendBackendUserAuthentication
-            && GeneralUtility::_GET('fe_edit')
+            && ($GLOBALS['TYPO3_REQUEST']->getQueryParams()['fe_edit'] ?? null)
         ) {
             $isEnabled = true;
         }

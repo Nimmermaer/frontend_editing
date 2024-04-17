@@ -37,7 +37,7 @@ class TypoLinkPostProcHook
     public function modifyFinalLinkTag(array &$params, ContentObjectRenderer $contentObjectRenderer): void
     {
         if (AccessService::isEnabled()) {
-            $parsedUrl = $contentObjectRenderer->lastTypoLinkUrl;
+            $parsedUrl = $contentObjectRenderer->lastTypoLinkResult->getUrl();
             $unparsedUrl = $contentObjectRenderer->parameters['href'] ?? false;
             $linkPageUid = $params['linkDetails']['pageuid'] ?? false;
 

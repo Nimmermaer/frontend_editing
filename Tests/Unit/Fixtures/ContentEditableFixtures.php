@@ -267,7 +267,7 @@ class ContentEditableFixtures
      * @param bool $enabled
      * @throws \Exception
      */
-    public static function setAccessServiceEnabled(bool $enabled)
+    public static function setAccessServiceEnabled(bool $enabled): void
     {
         $access = GeneralUtility::makeInstance(AccessService::class);
         $reflection = new \ReflectionClass($access);

@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\FrontendEditing\Controller;
 
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Controller\ContentElement\NewContentElementController as Typo3NewContentElementController;
@@ -240,7 +241,7 @@ class FrontendEditingModuleController
             $editPageButton = $buttonBar->makeLinkButton()
                 ->setHref($url)
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
-                ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-page-open', Icon::SIZE_SMALL));
+                ->setIcon($this->iconFactory->getIcon('actions-page-open', Icon::SIZE_SMALL));
             $buttonBar->addButton($editPageButton, ButtonBar::BUTTON_POSITION_LEFT, 3);
         }
 
@@ -280,7 +281,7 @@ class FrontendEditingModuleController
             ->setClasses('t3-frontend-editing__save')
             ->setTitle($lang->getLL('top-bar.save-all'))
             ->setShowLabelText(true)
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-document-save', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-document-save', Icon::SIZE_SMALL));
         $buttonBar->addButton($saveAllButton, ButtonBar::BUTTON_POSITION_LEFT, -10);
 
         $discardButton = $buttonBar->makeLinkButton()
@@ -288,7 +289,7 @@ class FrontendEditingModuleController
             ->setClasses('t3-frontend-editing__discard')
             ->setTitle($lang->getLL('top-bar.discard-all'))
             ->setShowLabelText(true)
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-close', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-close', Icon::SIZE_SMALL));
         $buttonBar->addButton($discardButton, ButtonBar::BUTTON_POSITION_LEFT, -9);
 
         // If the page is a translation in connected-mode, disable the new CEs button
@@ -301,7 +302,7 @@ class FrontendEditingModuleController
             ->setClasses('t3-frontend-editing__toggle-contents-toolbar')
             ->setTitle($lang->getLL('top-bar.toggle-contents-toolbar'))
             ->setShowLabelText(true)
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-document-add', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-document-add', Icon::SIZE_SMALL));
         $buttonBar->addButton($contentsToolbarToggleButton, ButtonBar::BUTTON_POSITION_LEFT, -8);
 
         $hiddenItemsToggleButton = $buttonBar->makeLinkButton()
@@ -309,7 +310,7 @@ class FrontendEditingModuleController
             ->setClasses('t3-frontend-editing__show-hidden-items')
             ->setTitle($lang->getLL('top-bar.toggle-hidden-items'))
             ->setShowLabelText(true)
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-eye', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-eye', Icon::SIZE_SMALL));
         $buttonBar->addButton($hiddenItemsToggleButton, ButtonBar::BUTTON_POSITION_LEFT, -7);
     }
 
@@ -354,7 +355,7 @@ class FrontendEditingModuleController
             ->setHref('#')
             ->setClasses('t3js-preset-current t3js-change-preset')
             ->setTitle($current['label'])
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('miscellaneous-placeholder', Icon::SIZE_SMALL))
+            ->setIcon($this->iconFactory->getIcon('miscellaneous-placeholder', Icon::SIZE_SMALL))
             ->setShowLabelText(true)
             ->setDataAttributes([
                 'key' => 'current',
@@ -369,7 +370,7 @@ class FrontendEditingModuleController
             ->setHref('#')
             ->setClasses('t3js-preset-maximized t3js-change-preset')
             ->setTitle($maximizeButtonLabel . ' (100%x100%)')
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-fullscreen', Icon::SIZE_SMALL))
+            ->setIcon($this->iconFactory->getIcon('actions-fullscreen', Icon::SIZE_SMALL))
             ->setShowLabelText(true)
             ->setDataAttributes([
                 'key' => 'maximized',
@@ -388,7 +389,7 @@ class FrontendEditingModuleController
             ->setHref('#')
             ->setClasses('t3js-preset-custom t3js-change-preset')
             ->setTitle($customButtonLabel . ' (' . $custom['width'] . 'x' . $custom['height'] . ')')
-            ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-expand', Icon::SIZE_SMALL))
+            ->setIcon($this->iconFactory->getIcon('actions-expand', Icon::SIZE_SMALL))
             ->setShowLabelText(true)
             ->setDataAttributes([
                 'key' => 'custom',
@@ -405,7 +406,7 @@ class FrontendEditingModuleController
                 ->setHref('#')
                 ->setClasses('divider')
                 ->setTitle('──────────────────')
-                ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('miscellaneous-placeholder', Icon::SIZE_SMALL))
+                ->setIcon($this->iconFactory->getIcon('miscellaneous-placeholder', Icon::SIZE_SMALL))
                 ->setShowLabelText(true)
                 ->setDisabled(true);
             $presetSplitButtonElement->addItem($separatorButton);
@@ -415,7 +416,7 @@ class FrontendEditingModuleController
                     ->setHref('#')
                     ->setClasses('t3js-change-preset')
                     ->setTitle($presetButtonLabel . ' (' . $preset['width'] . 'x' . $preset['height'] . ')')
-                    ->setIcon($this->moduleTemplate->getIconFactory()->getIcon('actions-device-' . $presetGroup, Icon::SIZE_SMALL))
+                    ->setIcon($this->iconFactory->getIcon('actions-device-' . $presetGroup, Icon::SIZE_SMALL))
                     ->setShowLabelText(true)
                     ->setDataAttributes([
                         'key' => $preset['key'],
@@ -479,7 +480,7 @@ class FrontendEditingModuleController
                 FlashMessage::class,
                 $lang->getLL('noValidPageSelected'),
                 '',
-                AbstractMessage::INFO
+                ContextualFeedbackSeverity::INFO
             );
             return $this->renderFlashMessage($flashMessage);
         }
@@ -516,7 +517,7 @@ class FrontendEditingModuleController
                     FlashMessage::class,
                     $lang->getLL('noSiteConfiguration'),
                     '',
-                    AbstractMessage::WARNING
+                    ContextualFeedbackSeverity::WARNING
                 );
                 return $this->renderFlashMessage($flashMessage);
             }

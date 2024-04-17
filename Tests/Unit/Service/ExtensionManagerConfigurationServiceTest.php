@@ -32,7 +32,7 @@ class ExtensionManagerConfigurationServiceTest extends UnitTestCase
     /**
      * @test
      */
-    public function getExtensionManagerSettings()
+    public function getExtensionManagerSettings(): void
     {
         $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
 

@@ -240,7 +240,7 @@ class FrontendEditingPanelTest extends UnitTestCase
         $fieldList,
         $enableEditing,
         $allowEditing
-    ) {
+    ): void {
         // TODO: this seems dirty to me. Is there some better example in TYPO3 core?
         $GLOBALS['BE_USER'] = new FrontendBackendUserAuthentication();
         $GLOBALS['TSFE']->config['config']['tx_frontend_editing'] = $enableEditing;

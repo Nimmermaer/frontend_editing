@@ -44,7 +44,7 @@ class FrontendEditingSetupSimulator implements MiddlewareInterface
             $context = GeneralUtility::makeInstance(Context::class);
 
             // Allow hidden pages for links generation, and show hidden contents if user wants to (show_hidden_items=1)
-            $showHiddenItems = (bool)(GeneralUtility::_GET('show_hidden_items') ?? false);
+            $showHiddenItems = (bool)(($GLOBALS['TYPO3_REQUEST']->getQueryParams()['show_hidden_items'] ?? null) ?? false);
             $context->setAspect(
                 'visibility',
                 GeneralUtility::makeInstance(VisibilityAspect::class, true, $showHiddenItems)
