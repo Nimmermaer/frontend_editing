@@ -70,7 +70,7 @@ class ContentEditableWrapperService
         if ($tagName) {
             $this->contentEditableWrapperTagName = $tagName;
         }
-        $this->uriBuilder = GeneralUtility::makeInstance(UriBuilder::class, GeneralUtility::makeInstance(Router::class));
+//        $this->uriBuilder = GeneralUtility::makeInstance(UriBuilder::class, GeneralUtility::makeInstance(Router::class));
     }
 
     /**

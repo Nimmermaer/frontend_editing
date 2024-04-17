@@ -57,6 +57,7 @@ use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\FrontendEditing\Backend\Controller\ContentElement\NewContentElementController;
@@ -69,7 +70,7 @@ use UnexpectedValueException;
  * Controller for FrontendEditing in the backend as a module
  * @internal This is a specific Backend Controller implementation and is not considered part of the Public TYPO3 API.
  */
-class FrontendEditingModuleController
+class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controller\ControllerInterface
 {
     /**
      * Page ID
@@ -161,7 +162,7 @@ class FrontendEditingModuleController
      */
     protected function initializeView(string $templateName): void
     {
-        $this->view->getRequest()->setControllerExtensionName('FrontendEditing');
+//        $this->view->getRequest()->setControllerExtensionName('FrontendEditing');
         $this->view->setTemplate($templateName);
         $this->view->setTemplateRootPaths(['EXT:frontend_editing/Resources/Private/Templates/FrontendEditingModule']);
         $this->view->setPartialRootPaths(['EXT:frontend_editing/Resources/Private/Partials/']);
@@ -186,13 +187,13 @@ class FrontendEditingModuleController
             $languageMenu = $this->moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
             $languageMenu->setIdentifier('_langSelector');
             foreach ($languages as $value => $label) {
-                $href = (string)$uriBuilder->buildUriFromRoute(
-                    'web_FrontendEditing',
-                    [
-                        'id' => $this->id,
-                        'language' => (int)$value
-                    ]
-                );
+//                $href = (string)$uriBuilder->buildUriFromRoute(
+//                    'web_FrontendEditing',
+//                    [
+//                        'id' => $this->id,
+//                        'language' => (int)$value
+//                    ]
+//                );
                 $menuItem = $languageMenu->makeMenuItem()
                     ->setTitle($label)
                     ->setHref($href);
@@ -259,10 +260,10 @@ class FrontendEditingModuleController
         if ($mayMakeShortcut) {
             $getVars = ['id', 'route'];
 
-            $shortcutButton = $buttonBar->makeShortcutButton()
-                ->setModuleName('web_FrontendEditing')
-                ->setGetVariables($getVars);
-            $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
+//            $shortcutButton = $buttonBar->makeShortcutButton()
+//                ->setModuleName('web_FrontendEditing')
+//                ->setGetVariables($getVars);
+//            $buttonBar->addButton($shortcutButton, ButtonBar::BUTTON_POSITION_RIGHT);
         }
 
     }
@@ -844,33 +845,33 @@ class FrontendEditingModuleController
      */
     protected function getContentItems(): array
     {
-        $contentController = GeneralUtility::makeInstance(
-            NewContentElementController::class,
-            $this->iconFactory,
-            $this->pageRenderer,
-            $this->uriBuilder,
-            $this->moduleTemplateFactory
-        );
+//        $contentController = GeneralUtility::makeInstance(
+//            NewContentElementController::class,
+//            $this->uriBuilder,
+////            $this->iconFactory,
+////            $this->pageRenderer,
+////            $this->moduleTemplateFactory
+//        );
 
-        $wizardItems = $contentController->publicGetWizards();
+//        $wizardItems = $contentController->publicGetWizards();
 
-        $this->wizardItemsHook($wizardItems, $contentController);
+//        $this->wizardItemsHook($wizardItems, $contentController);
 
         $contentItems = [];
         $wizardTabKey = '';
-        foreach ($wizardItems as $wizardKey => $wizardItem) {
-            if (isset($wizardItem['header'])) {
-                $wizardTabKey = $wizardKey;
-                $contentItems[$wizardTabKey]['description'] = $wizardItem['header'];
-            } else {
-                $contentItems[$wizardTabKey]['items'][] = array_merge(
-                    $wizardItem,
-                    [
-                        'iconHtml' => $this->iconFactory->getIcon($wizardItem['iconIdentifier'])->render()
-                    ]
-                );
-            }
-        }
+//        foreach ($wizardItems as $wizardKey => $wizardItem) {
+//            if (isset($wizardItem['header'])) {
+//                $wizardTabKey = $wizardKey;
+//                $contentItems[$wizardTabKey]['description'] = $wizardItem['header'];
+//            } else {
+//                $contentItems[$wizardTabKey]['items'][] = array_merge(
+//                    $wizardItem,
+//                    [
+//                        'iconHtml' => $this->iconFactory->getIcon($wizardItem['iconIdentifier'])->render()
+//                    ]
+//                );
+//            }
+//        }
         return $contentItems;
     }
 
@@ -1015,5 +1016,19 @@ class FrontendEditingModuleController
             true,
             true
         );
+    }
+
+    /**
+     * Processes a general request. The result can be returned by altering the given response.
+     *
+     * @param \TYPO3\CMS\Extbase\Mvc\RequestInterface $request The request object
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
+     * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
+     * @throws \TYPO3\CMS\Core\Exception
+     */
+    public function processRequest(RequestInterface $request): ResponseInterface {
+
+        return $this->showAction($request);
     }
 }
