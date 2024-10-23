@@ -17,6 +17,11 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\FrontendEditing\Controller;
 
+use TYPO3\CMS\Backend\Routing\PreviewUriBuilder;
+use TYPO3\CMS\Backend\View\BackendLayout\BackendLayout;
+use TYPO3\CMS\Backend\View\Drawing\DrawingConfiguration;
+use TYPO3\CMS\Backend\View\PageViewMode;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -280,7 +285,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $saveAllButton = $buttonBar->makeLinkButton()
             ->setHref('#')
             ->setClasses('t3-frontend-editing__save')
-            ->setTitle($lang->getLL('top-bar.save-all'))
+            ->setTitle($lang->sl('top-bar.save-all'))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-document-save', Icon::SIZE_SMALL));
         $buttonBar->addButton($saveAllButton, ButtonBar::BUTTON_POSITION_LEFT, -10);
@@ -288,7 +293,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $discardButton = $buttonBar->makeLinkButton()
             ->setHref('#')
             ->setClasses('t3-frontend-editing__discard')
-            ->setTitle($lang->getLL('top-bar.discard-all'))
+            ->setTitle($lang->sl('top-bar.discard-all'))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-close', Icon::SIZE_SMALL));
         $buttonBar->addButton($discardButton, ButtonBar::BUTTON_POSITION_LEFT, -9);
@@ -301,7 +306,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
             ->setDisabled($disableNewCEButton)
             ->setHref('#')
             ->setClasses('t3-frontend-editing__toggle-contents-toolbar')
-            ->setTitle($lang->getLL('top-bar.toggle-contents-toolbar'))
+            ->setTitle($lang->sl('top-bar.toggle-contents-toolbar'))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-document-add', Icon::SIZE_SMALL));
         $buttonBar->addButton($contentsToolbarToggleButton, ButtonBar::BUTTON_POSITION_LEFT, -8);
@@ -309,7 +314,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $hiddenItemsToggleButton = $buttonBar->makeLinkButton()
             ->setHref('#')
             ->setClasses('t3-frontend-editing__show-hidden-items')
-            ->setTitle($lang->getLL('top-bar.toggle-hidden-items'))
+            ->setTitle($lang->sl('top-bar.toggle-hidden-items'))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-eye', Icon::SIZE_SMALL));
         $buttonBar->addButton($hiddenItemsToggleButton, ButtonBar::BUTTON_POSITION_LEFT, -7);
@@ -327,7 +332,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         // Add preset menu to module docheader
         $presetSplitButtonElement = $buttonBar->makeSplitButton();
 
-        $maximizeButtonLabel = $lang->getLL('maximized');
+        $maximizeButtonLabel = $lang->sl('maximized');
 
 
         // Current web_view state of the BE user
@@ -385,7 +390,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $custom = $this->getBackendUser()->uc['moduleData']['web_view']['States']['custom'] ?? [];
         $custom['width'] = (isset($custom['width']) && (int)$custom['width'] >= 300 ? (int)$custom['width'] : 320);
         $custom['height'] = (isset($custom['height']) && (int)$custom['height'] >= 300 ? (int)$custom['height'] : 480);
-        $customButtonLabel = $lang->getLL('custom');
+        $customButtonLabel = $lang->sl('custom');
         $customButton = $buttonBar->makeLinkButton()
             ->setHref('#')
             ->setClasses('t3js-preset-custom t3js-change-preset')
@@ -461,10 +466,14 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $this->pageinfo = BackendUtility::readPageAccess($this->id, $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW));
         if ($this->pageinfo !== false) {
             // If page info is not resolved, user has no access or the ID parameter was malformed.
+            $backendLayout = GeneralUtility::makeInstance(BackendLayout::class, 'dummy', 'dummy', []);
             $this->context = GeneralUtility::makeInstance(
                 PageLayoutContext::class,
                 $this->pageinfo,
-                GeneralUtility::makeInstance(BackendLayoutView::class)->getBackendLayoutForPage($this->id)
+                GeneralUtility::makeInstance(BackendLayoutView::class)->getBackendLayoutForPage($this->id),
+                $request->getAttribute('site') ?? new NullSite(),
+                DrawingConfiguration::create($backendLayout, BackendUtility::getPagesTSconfig($this->id), PageViewMode::LayoutView),
+                $request
             );
         }
 
@@ -479,7 +488,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         if (!$this->isValidDoktype()) {
             $flashMessage = GeneralUtility::makeInstance(
                 FlashMessage::class,
-                $lang->getLL('noValidPageSelected'),
+                $lang->sl('noValidPageSelected'),
                 '',
                 ContextualFeedbackSeverity::INFO
             );
@@ -502,21 +511,14 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
             $targetUrl = $feUrl;
         } else {
             try {
-                $targetUrl = BackendUtility::getPreviewUrl(
-                    $this->id,
-                    '',
-                    null,
-                    '',
-                    '',
-                    $this->getTypeParameterIfSet() . '&L=' . $languageId
-                );
-
+                /** @var PreviewUriBuilder $targetUrl */
+                $targetUrl = GeneralUtility::makeInstance(PreviewUriBuilder::class,  (int)$request->getQueryParams()['id']);
                 // Check for what protocol to use
-                $targetUrl = str_replace(['https://', 'http://'], $this->getProtocol(), $targetUrl);
+                $targetUrl = str_replace(['https://', 'http://'], $this->getProtocol(), (string)$targetUrl->buildUri());
             } catch (UnableToLinkToPageException) {
                 $flashMessage = GeneralUtility::makeInstance(
                     FlashMessage::class,
-                    $lang->getLL('noSiteConfiguration'),
+                    $lang->sl('noSiteConfiguration'),
                     '',
                     ContextualFeedbackSeverity::WARNING
                 );
@@ -538,7 +540,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
 
         $current = $this->getBackendUser()->uc['moduleData']['web_view']['States']['current'] ?? [];
 
-        $current['label'] = ($current['label'] ?? $lang->getLL('custom'));
+        $current['label'] = ($current['label'] ?? $lang->sL('custom'));
         $current['width'] = (isset($current['width']) && (int)$current['width'] >= 300 ? (int)$current['width'] : null);
         $current['height'] = (isset($current['height']) && (int)$current['height'] >= 300 ? (int)$current['height'] : null);
         $custom = $this->getBackendUser()->uc['moduleData']['web_view']['States']['custom'] ?? [];
@@ -546,21 +548,21 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         $custom['height'] = (isset($current['custom']) && (int)$current['custom'] >= 300 ? (int)$current['custom'] : 480);
 
         // Assign variables to template
-        $this->view->assign('icons', $icons);
-        $this->view->assign('current', $current);
-        $this->view->assign('custom', $custom);
-        $this->view->assign('presetGroups', $this->getPreviewPresets());
-        $this->view->assign('url', $this->addFrontendEditingParameter($targetUrl));
-        $this->view->assign('protocol', $request->getUri()->getScheme());
-        $this->view->assign('contentItems', $this->getContentItems());
-        $this->view->assign('customRecords', $this->getCustomRecords());
-        $this->view->assign('disableLoadingScreen', (int)(ConfigurationUtility::getExtensionConfiguration()['disableLoadingScreen'] ?? 0));
-        $this->view->assign('loadingIcon', $this->iconFactory->getIcon('spinner-circle-dark', Icon::SIZE_LARGE)->render());
+        $this->moduleTemplate->assign('icons', $icons);
+        $this->moduleTemplate->assign('current', $current);
+        $this->moduleTemplate->assign('custom', $custom);
+        $this->moduleTemplate->assign('presetGroups', $this->getPreviewPresets());
+        $this->moduleTemplate->assign('url', $this->addFrontendEditingParameter($targetUrl));
+        $this->moduleTemplate->assign('protocol', $request->getUri()->getScheme());
+        $this->moduleTemplate->assign('contentItems', $this->getContentItems());
+        $this->moduleTemplate->assign('customRecords', $this->getCustomRecords());
+        $this->moduleTemplate->assign('disableLoadingScreen', (int)(ConfigurationUtility::getExtensionConfiguration()['disableLoadingScreen'] ?? 0));
+        $this->moduleTemplate->assign('loadingIcon', $this->iconFactory->getIcon('spinner-circle-dark', Icon::SIZE_LARGE)->render());
 
         $this->initFrontendEditingGui();
 
-        $this->moduleTemplate->setContent($this->view->render());
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+        return $this->moduleTemplate->renderResponse('FrontendEditingModule/Show');
+
     }
 
     /**
@@ -580,26 +582,27 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
         );
         $this->loadJavascriptResources();
 
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/ContextMenu');
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Recordlist/ClearCache');
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/FrontendEditing/GUI', 'function(FrontendEditing) {
-            // The global F object for API calls
-            window.F = new FrontendEditing();
-            window.F.initGUI({
-                resourcePath: ' . GeneralUtility::quoteJSvalue($this->getAbsolutePath('EXT:frontend_editing/Resources/Public/')) . ',
-                editorConfigurationUrl: ' . GeneralUtility::quoteJSvalue($configurationEndpointUrl) . '
-            });
-            window.F.setEndpointUrl(' . GeneralUtility::quoteJSvalue($endpointUrl) . ');
-            window.F.setAjaxRecordProcessEndpointUrl(' . GeneralUtility::quoteJSvalue($ajaxRecordProcessEndpointUrl) . ');
-            window.F.setBESessionId(' . GeneralUtility::quoteJSvalue($this->getBeSessionKey()) . ');
-            window.F.setTranslationLabels(' . json_encode($this->getLocalizedFrontendLabels()) . ');
-            window.F.setDisableModalOnNewCe(' .
-                (int)ConfigurationUtility::getExtensionConfiguration()['enablePlaceholders'] .
-            ');
-            window.FrontendEditingMode = true;
-        }');
-    }
-
+        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/context-menu.js');
+        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/clear-cache.js');
+        $this->pageRenderer->loadJavaScriptModule('@typo3/frontend-editing/GUI');
+        $this->pageRenderer->loadJavaScriptModule('@typo3/frontend-editing/BackendModule.js');
+        /**'function(FrontendEditing) {
+         * // The global F object for API calls
+         * window.F = new FrontendEditing();
+         * window.F.initGUI({
+         * resourcePath: ' . GeneralUtility::quoteJSvalue($this->getAbsolutePath('EXT:frontend_editing/Resources/Public/')) . ',
+         * editorConfigurationUrl: ' . GeneralUtility::quoteJSvalue($configurationEndpointUrl) . '
+         * });
+         * window.F.setEndpointUrl(' . GeneralUtility::quoteJSvalue($endpointUrl) . ');
+         * window.F.setAjaxRecordProcessEndpointUrl(' . GeneralUtility::quoteJSvalue($ajaxRecordProcessEndpointUrl) . ');
+         * window.F.setBESessionId(' . GeneralUtility::quoteJSvalue($this->getBeSessionKey()) . ');
+         * window.F.setTranslationLabels(' . json_encode($this->getLocalizedFrontendLabels()) . ');
+         * window.F.setDisableModalOnNewCe(' .
+         * (int)ConfigurationUtility::getExtensionConfiguration()['enablePlaceholders'] .
+         * ');
+         * window.FrontendEditingMode = true;
+         * }' */
+          }
     /**
      * Helper method to get the file name relative to the URL
      *
@@ -650,17 +653,16 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
 
     /**
      * @param FlashMessage $flashMessage
-     * @return HtmlResponse
+     * @return ResponseInterface
      * @throws Exception
      */
-    protected function renderFlashMessage(FlashMessage $flashMessage): HtmlResponse
+    protected function renderFlashMessage(FlashMessage $flashMessage): ResponseInterface
     {
         $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
         $defaultFlashMessageQueue = $flashMessageService->getMessageQueueByIdentifier();
         $defaultFlashMessageQueue->enqueue($flashMessage);
 
-        $this->moduleTemplate->setContent($this->view->render());
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+        return $this->moduleTemplate->renderResponse();
     }
 
     /**
@@ -822,7 +824,6 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
             && !in_array($pageType, [
                 PageRepository::DOKTYPE_SPACER,
                 PageRepository::DOKTYPE_SYSFOLDER,
-                PageRepository::DOKTYPE_RECYCLER
             ], true);
     }
 
@@ -980,23 +981,7 @@ class FrontendEditingModuleController implements \TYPO3\CMS\Extbase\Mvc\Controll
     protected function loadJavascriptResources(): void
     {
         $this->pageRenderer->addJsFile(
-            'EXT:core/Resources/Public/JavaScript/Contrib/jquery/jquery.js'
-        );
-        $this->pageRenderer->addRequireJsConfiguration(
-            [
-                'shim' => [
-                    'ckeditor' => ['exports' => 'CKEDITOR'],
-                    'ckeditor-jquery-adapter' => ['jquery', 'ckeditor'],
-                ],
-                'paths' => [
-                    'TYPO3/CMS/FrontendEditing/Contrib/toastr' => PathUtility::getAbsoluteWebPath(
-                            ExtensionManagementUtility::extPath('frontend_editing', 'Resources/Public/JavaScript/Contrib/')
-                        ) . 'toastr',
-                    'TYPO3/CMS/FrontendEditing/Contrib/immutable' => PathUtility::getAbsoluteWebPath(
-                            ExtensionManagementUtility::extPath('frontend_editing', 'Resources/Public/JavaScript/Contrib/')
-                        ) . 'immutable'
-                ]
-            ]
+            'EXT:core/Resources/Public/JavaScript/Contrib/jquery.js'
         );
 
         // Load CKEDITOR and CKEDITOR jQuery adapter independent for global access

@@ -15,14 +15,9 @@
  * Module: TYPO3/CMS/FrontendEditing/BackendModule
  * Main logic for resizing the view of the frame
  */
-define([
-  'require',
-  'exports',
-  'jquery',
-  'TYPO3/CMS/Backend/Storage/Persistent',
-  'jquery-ui/resizable'
-], function(require, exports, $, PersistentStorage) {
-  'use strict';
+
+import $ from 'jquery';
+import PersistentStorage from"@typo3/backend/storage/persistent.js"
 
   /**
    * @type {{resizableContainerIdentifier: string, moduleBodySelector: string, storagePrefix: string, $iframe: null, $resizableContainer: null}}
@@ -64,7 +59,7 @@ define([
     queueDelayTimer: null
 
   };
-
+  console.log(FrontedEditing);
   FrontedEditing.persistQueue = function() {
     if (FrontedEditing.queueIsRunning === false && FrontedEditing.queue.length >= 1) {
       FrontedEditing.queueIsRunning = true;
@@ -317,4 +312,5 @@ define([
   $(FrontedEditing.initialize);
 
   return FrontedEditing;
-});
+
+export default function () {}

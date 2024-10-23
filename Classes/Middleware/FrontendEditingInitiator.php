@@ -59,7 +59,7 @@ class FrontendEditingInitiator implements MiddlewareInterface
     public function __construct()
     {
         $this->uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-        $this->pageRenderer = new PageRenderer();
+        $this->pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);
     }
 
     /**
